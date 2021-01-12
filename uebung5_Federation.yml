@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: update /etc/prometheus/prometheus.yml
+    copy:
+      src: /home/ordix/ansible/template/uebung5/prometheus.yml
+      dest: /etc/prometheus/
+
+  - name: Daemon reload + ensure prometheus service is started and enabled
+    systemd:
+      daemon_reload: True
+      name: prometheus
+      state: restarted
+      enabled: True
+
+...
