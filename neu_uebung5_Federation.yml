@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: update /etc/prometheus/prometheus.yml
+    blockinfile:
+      path: /etc/prometheus/prometheus.yml
+      create: true
+      state: present
+      insertafter: "^#          - 'prometheus1.ordix.de:9090'"
+      block: |2
+          - job_name: "federate-prometheus1"
+            tls_config:
+              insecure_skip_verify: True
+            honor_labels: True
+            metrics_path: '/prometheus/federate'
+            scheme: https
+            basic_auth:
+              username: ordix
+              password: ordix
+            params:
+              'match[]':
+                 - '{job!=""}'
+            static_configs:
+              - targets:
+                  - 'prometheus1.ordix.de:9443'
+
+  - name: Daemon reload + ensure prometheus service is started and enabled
+    systemd:
+      daemon_reload: True
+      name: prometheus
+      state: restarted
+      enabled: True
+
+...
